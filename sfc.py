@@ -5,7 +5,7 @@ import getpass
 from bs4 import BeautifulSoup
 import re
 
-def sendGetRequest(url:str, params:dict=None, s:requests.Session=None) -> requests.Response:
+def sendGetRequest(url:str, params:dict, s:requests.Session) -> requests.Response:
     '''
     Sends a GET request to the specified URL and returns response object.
     If URL is invalid, or request is unsuccessful, an an error is raised.
@@ -29,7 +29,7 @@ def sendGetRequest(url:str, params:dict=None, s:requests.Session=None) -> reques
     except:
         raise
 
-def sendPostRequest(url:str, body:dict, hdrs:dict, s:requests.Session=None) -> requests.Response:
+def sendPostRequest(url:str, body:dict, hdrs:dict, s:requests.Session) -> requests.Response:
     '''
     Sends a POST request to the specified URL and returns the response object.
     If URL is invalid, or request is unsuccessful, then an error is raised.
@@ -67,9 +67,9 @@ def getWelcomeMessage(htm:bytes) -> str:
     '''
     soup = BeautifulSoup(htm, "html.parser")
     lc = soup.find(id="leftColumn")
-    s = lc.find("h1").get_text().strip() + "\n"
-    s = s + lc.find("p").get_text().strip() + "\n"
-    for item in lc.find_all("li"):
+    s = lc.find("h1").get_text().strip() + "\n"                    #type: ignore
+    s = s + lc.find("p").get_text().strip() + "\n"                 #type: ignore
+    for item in lc.find_all("li"):                                 #type: ignore
         s = s + "• " + re.sub(r"\s{2,}", "", item.get_text().strip()) + "\n"
     return s
 
@@ -81,16 +81,22 @@ def getMainMenu() -> str:
     s = s + "\nMAIN MENU\n"
     s = s + "---------\n"
     s = s + "1. Log in\n"
-    s = s + "2. Exit\n"
+    s = s + "8. Switch to terminal mode\n"
+    s = s + "9. Exit\n"
     return s
+
+def login():
+    un = input("Username: ")
+    pw = getpass.getpass("Password: ")
+    print(un, pw)
 
 if __name__ == "__main__":
     # Start session and get login page.
     s = requests.Session()
     url = "https://playstarfleet.com/login"
     try:
-        #r = sendGetRequest(url, None, s)
-        pass
+        r = sendGetRequest(url, {}, s)
+        print(getWelcomeMessage(r.content))
     except requests.exceptions.HTTPError as err:
         print(f"HTTP error: {err}\nExiting...")
         exit()
@@ -105,16 +111,24 @@ if __name__ == "__main__":
     print(getMainMenu())
     cok = False
     while not cok:
-        c = input("Command: ")
-        if c in ["1", "log in", "login", "1. Log in"]:
-            cok = True
-            print("I'm still working on the login function.")
-        elif c in ["2", "exit", "Exit", "2. Exit"]:
-            print("Signing out. Goodbye!")
-            exit()
-        else:
-            print("I didn't understand that. Please try again.")
-    '''un = input("Username: ")
-    pw = getpass.getpass("Password: ")'''
+        try:
+            c = int(input("Menu choice: "))
+        except ValueError:
+            print("Nice try, smartass. Enter a number.")
+            c = ""
+
+        match c:
+            case 1:
+                print("I'm still working on the login function.")
+                login()
+                cok = True
+            case 8:
+                print("Switching to terminal mode. Welcome, power user! >:)")
+                cok = True
+            case 9:
+                print("Signing out. Goodbye!")
+                exit()
+            case _:
+                print("I didn't understand that. Please try again.")
 
     exit()
