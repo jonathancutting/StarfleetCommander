@@ -85,10 +85,39 @@ def getMainMenu() -> str:
     s = s + "9. Exit\n"
     return s
 
-def login():
-    un = input("Username: ")
-    pw = getpass.getpass("Password: ")
-    print(un, pw)
+def login(s:requests.Session):
+    loc = "https://playstarfleet.com/login/authenticate"
+    body = {}
+    hdrs = {}
+
+    # Build request body.
+    uname = input("Username: ")
+    body["login"] = re.sub(r"\s", "+", uname)
+    passwd = getpass.getpass("Password: ")
+    body["password"] = passwd
+    body["commit"] = "Sign+In"
+
+    # Build request headers.
+    hdrs["Accept"] = "text/html"
+    hdrs["Accept-Language"] = "en-CA,en-US"
+    hdrs["Connection"] = "keep-alive"
+
+    print(body)
+    #resp = sendPostRequest(loc, body, hdrs, s)
+
+def terminalMode(s:requests.Session) -> int:
+    go = True
+    while go:
+        c = input("sfc:~$ ")
+        match c:
+            case "login":
+                login(s)
+                #print(s.auth)
+            case "exit":
+                return 9
+            case _:
+                pass
+    return 0
 
 if __name__ == "__main__":
     # Start session and get login page.
@@ -120,15 +149,16 @@ if __name__ == "__main__":
         match c:
             case 1:
                 print("I'm still working on the login function.")
-                login()
+                login(s)
                 cok = True
             case 8:
                 print("Switching to terminal mode. Welcome, power user! >:)")
-                cok = True
+                c = terminalMode(s)
+                if c == 9: cok = True
             case 9:
-                print("Signing out. Goodbye!")
-                exit()
+                cok = True
             case _:
                 print("I didn't understand that. Please try again.")
 
+    print("Signing out. Goodbye!")
     exit()
