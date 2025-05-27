@@ -1,9 +1,31 @@
 #!/usr/bin/env python3
 
-import requests
-import getpass
-from bs4 import BeautifulSoup
-import re
+import os                           # for file system and terminal commands
+import requests                     # for REST requests
+import getpass                      # to allow non-printing input
+from bs4 import BeautifulSoup       # HTML parser
+import re                           # for regular expression processing
+import textwrap                     # to make text in terminal look pretty
+import shutil                       # to get information about terminal
+
+class FCOLOR:
+    # https://gist.github.com/fnky/458719343aabd01cfb17a3a4f7296797
+    BLACK = "\033[30m"
+    RED = "\033[31m"
+    GREEN = "\033[32m"
+    YELLOW = "\033[33m"
+    BLUE = "\033[34m"
+    MAGENTA = "\033[35m"
+    CYAN = "\033[36m"
+    WHITE = "\033[37m"
+    DEFAULT = "\033[39m"
+
+    RESET = "\033[0m"
+    BOLD = "\033[1m"
+    ITALIC = "\033[3m"
+    UNDERLINE = "\033[4m"
+    BLINKING = "\033[5m"
+    STRIKETHROUGH = "\033[9m"
 
 def sendGetRequest(url:str, params:dict, s:requests.Session) -> requests.Response:
     '''
@@ -54,6 +76,12 @@ def sendPostRequest(url:str, body:dict, hdrs:dict, s:requests.Session) -> reques
     except:
         raise
 
+def clearConsole():
+    if os.name == "nt":     # for Windows
+        os.system("cls")
+    else:                   # for Linux/Mac
+        os.system("clear")
+
 def getWelcomeMessage(htm:bytes) -> str:
     '''
     Uses BeautifulSoup to extract the welcome message from the login page and
@@ -76,7 +104,6 @@ def getWelcomeMessage(htm:bytes) -> str:
 def getMainMenu() -> str:
     s = "=========================\n"
     s = s + "\033[1m   STARFLEET COMMANDER\033[0m\n"
-    s = s + "   Terminal Interface\n"
     s = s + "=========================\n"
     s = s + "\nMAIN MENU\n"
     s = s + "---------\n"
@@ -85,39 +112,55 @@ def getMainMenu() -> str:
     s = s + "9. Exit\n"
     return s
 
-def login(s:requests.Session):
+def cmdLogin(s:requests.Session):
     loc = "https://playstarfleet.com/login/authenticate"
     body = {}
     hdrs = {}
 
     # Build request body.
     uname = input("Username: ")
-    body["login"] = re.sub(r"\s", "+", uname)
+    body["login"] = uname
     passwd = getpass.getpass("Password: ")
     body["password"] = passwd
-    body["commit"] = "Sign+In"
+    body["commit"] = "Sign In"
 
     # Build request headers.
     hdrs["Accept"] = "text/html"
     hdrs["Accept-Language"] = "en-CA,en-US"
-    hdrs["Connection"] = "keep-alive"
+    hdrs["Upgrade-Insecure-Requests"] = "1"
 
     print(body)
+    print(hdrs)
     #resp = sendPostRequest(loc, body, hdrs, s)
 
-def terminalMode(s:requests.Session) -> int:
-    go = True
-    while go:
-        c = input("sfc:~$ ")
-        match c:
-            case "login":
-                login(s)
-                #print(s.auth)
-            case "exit":
-                return 9
-            case _:
-                pass
-    return 0
+def cmdHelp():
+    s = []
+    w = shutil.get_terminal_size().columns
+    t = "Starfleet Commander Terminal Mode functions in much the same way " \
+     "as the terminal in Linux does. At the command prompt, you type a command " \
+     "you want to perform, along with any options relevant to that command."
+    s.append(textwrap.fill(t, w))
+    
+    t = "For example, from the prompt \"sfc:~$\", you might type \"planets\" to " \
+     "view a list and description of your planets. Similarly, you might type " \
+     "\"fleet\" to view your current fleet status."
+    s.append(textwrap.fill(t, w))
+
+    t = "You can also add options to these commands, if the command supports them. " \
+     "For example, \"sfc:~$ galaxy -g8 -s35\" will run the galaxy command with " \
+     "options g8 and s35, and you will be shown information for System 35 in " \
+     "Galaxy 8."
+    s.append(textwrap.fill(t, w))
+
+    t = "For help with a specific command or to see its available options, type " \
+     "the command followed by \"--help\"."
+    s.append(textwrap.fill(t, w))
+
+    t = "Current commands are: login, help, exit"
+    s.append(textwrap.fill(t, w))
+    
+    for l in s:
+        print(l, "\n")
 
 if __name__ == "__main__":
     # Start session and get login page.
@@ -136,29 +179,23 @@ if __name__ == "__main__":
         print(f"Error: {err}\nExiting...")
         exit()
     
-    # Display main menu and get user input.
-    print(getMainMenu())
-    cok = False
-    while not cok:
-        try:
-            c = int(input("Menu choice: "))
-        except ValueError:
-            print("Nice try, smartass. Enter a number.")
-            c = ""
-
+    # Start terminal interface.
+    clearConsole()
+    print(f"   {FCOLOR.BOLD}STARFLEET COMMANDER - Terminal Interface{FCOLOR.RESET}")
+    print("==============================================")
+    go = True
+    while go:
+        c = input(f"{FCOLOR.BOLD}{FCOLOR.GREEN}sfc{FCOLOR.DEFAULT}:{FCOLOR.BLUE}~{FCOLOR.DEFAULT}${FCOLOR.RESET} ")
         match c:
-            case 1:
-                print("I'm still working on the login function.")
-                login(s)
-                cok = True
-            case 8:
-                print("Switching to terminal mode. Welcome, power user! >:)")
-                c = terminalMode(s)
-                if c == 9: cok = True
-            case 9:
-                cok = True
+            case "login":
+                cmdLogin(s)
+                #print(s.auth)
+            case "exit" | "quit":
+                go = False
+            case "help":
+                cmdHelp()
             case _:
-                print("I didn't understand that. Please try again.")
+                print(f"Command '{c}' not found. See 'help' for a list of available commands.")
 
     print("Signing out. Goodbye!")
     exit()
