@@ -8,6 +8,8 @@ import re                           # for regular expression processing
 import textwrap                     # to make text in terminal look pretty
 import shutil                       # to get information about terminal
 
+import cmdLogin
+
 class FCOLOR:
     # https://gist.github.com/fnky/458719343aabd01cfb17a3a4f7296797
     BLACK = "\033[30m"
@@ -112,27 +114,6 @@ def getMainMenu() -> str:
     s = s + "9. Exit\n"
     return s
 
-def cmdLogin(s:requests.Session):
-    loc = "https://playstarfleet.com/login/authenticate"
-    body = {}
-    hdrs = {}
-
-    # Build request body.
-    uname = input("Username: ")
-    body["login"] = uname
-    passwd = getpass.getpass("Password: ")
-    body["password"] = passwd
-    body["commit"] = "Sign In"
-
-    # Build request headers.
-    hdrs["Accept"] = "text/html"
-    hdrs["Accept-Language"] = "en-CA,en-US"
-    hdrs["Upgrade-Insecure-Requests"] = "1"
-
-    print(body)
-    print(hdrs)
-    #resp = sendPostRequest(loc, body, hdrs, s)
-
 def cmdHelp():
     s = []
     w = shutil.get_terminal_size().columns
@@ -162,13 +143,20 @@ def cmdHelp():
     for l in s:
         print(l, "\n")
 
+def buildCommandDict(s:str) -> dict:
+    cmdDict = {}
+    spl = s.split(" ")
+    cmdDict["command"] = spl[0]
+    return cmdDict
+
 if __name__ == "__main__":
     # Start session and get login page.
     s = requests.Session()
     url = "https://playstarfleet.com/login"
     try:
+        print("Trying to connect to SFC...")
         r = sendGetRequest(url, {}, s)
-        print(getWelcomeMessage(r.content))
+        # print(getWelcomeMessage(r.content))
     except requests.exceptions.HTTPError as err:
         print(f"HTTP error: {err}\nExiting...")
         exit()
@@ -186,9 +174,9 @@ if __name__ == "__main__":
     go = True
     while go:
         c = input(f"{FCOLOR.BOLD}{FCOLOR.GREEN}sfc{FCOLOR.DEFAULT}:{FCOLOR.BLUE}~{FCOLOR.DEFAULT}${FCOLOR.RESET} ")
-        match c:
+        match c.split(" ")[0]:
             case "login":
-                cmdLogin(s)
+                cmdLogin.login(c, s)
                 #print(s.auth)
             case "exit" | "quit":
                 go = False
