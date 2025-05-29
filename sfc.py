@@ -145,8 +145,16 @@ def cmdHelp():
 
 def buildCommandDict(s:str) -> dict:
     cmdDict = {}
+    cmdDict["cmd"] = ""
+    cmdDict["opts"] = []
+    cmdDict["args"] = []
     spl = s.split(" ")
-    cmdDict["command"] = spl[0]
+    if len(spl) == 0:
+        pass
+    elif len(spl) == 1:
+        cmdDict["cmd"] = spl[0]
+    else:
+        pass
     return cmdDict
 
 if __name__ == "__main__":
