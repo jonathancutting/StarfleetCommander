@@ -137,24 +137,37 @@ def cmdHelp():
      "the command followed by \"--help\"."
     s.append(textwrap.fill(t, w))
 
-    t = "Current commands are: login, help, exit"
+    t = "Current commands are: login, help, exit, quit"
     s.append(textwrap.fill(t, w))
     
     for l in s:
         print(l, "\n")
 
 def buildCommandDict(s:str) -> dict:
+    '''
+    Builds a simple command dictionary to send to the relevant command module.
+    
+    Args:
+        s (str): contains the command and all options/arguments. The string
+           will be split using a space as the delimiter. The first substring
+           is assumed to be the command, and all subsequent substrings are
+           placed into a list for the dictionary's "args" element.
+    Returns:
+        dict: dictionary containing two elements. The "cmd" element contains the
+              command as a string, and the "args" element is a list containing
+              everything else.
+    '''
     cmdDict = {}
     cmdDict["cmd"] = ""
-    cmdDict["opts"] = []
     cmdDict["args"] = []
     spl = s.split(" ")
-    if len(spl) == 0:
-        pass
-    elif len(spl) == 1:
+
+    if len(spl) == 1:               # passed string has only one substring
         cmdDict["cmd"] = spl[0]
-    else:
-        pass
+    elif len(spl) > 1:              # passed string has more than one substring
+        cmdDict["cmd"] = spl[0]
+        for a in spl[1:]:
+            cmdDict["args"].append(a)
     return cmdDict
 
 if __name__ == "__main__":
@@ -182,16 +195,19 @@ if __name__ == "__main__":
     go = True
     while go:
         c = input(f"{FCOLOR.BOLD}{FCOLOR.GREEN}sfc{FCOLOR.DEFAULT}:{FCOLOR.BLUE}~{FCOLOR.DEFAULT}${FCOLOR.RESET} ")
-        match c.split(" ")[0]:
+        cmdDict = buildCommandDict(c)
+        match cmdDict["cmd"]:
             case "login":
-                cmdLogin.login(c, s)
+                cmdLogin.login(cmdDict, s)
                 #print(s.auth)
             case "exit" | "quit":
                 go = False
             case "help":
                 cmdHelp()
+            case "":
+                pass
             case _:
-                print(f"Command '{c}' not found. See 'help' for a list of available commands.")
+                print(f"Command '{cmdDict['cmd']}' not found. See 'help' for a list of available commands.")
 
     print("Signing out. Goodbye!")
     exit()
