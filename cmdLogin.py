@@ -3,7 +3,21 @@ import getpass
 import shutil
 import textwrap
 
-def login(cmd:dict, s:requests.Session):
+def login(cmd:dict[str, list[str]], s:requests.Session):
+    '''
+    Handles the "login" command from sfc main function.
+
+    Args:
+        cmd (dict):             Dictionary of the user-entered command string,
+                                as parsed by the buildCommandDict function in
+                                sfc.py. The dictionary should contain two 
+                                elements: first, a string with the command, and
+                                secondly, a list of strings with the arguments.
+        s (requests.Session):   The user's request session object.
+    
+    Returns:
+        None:   No returned objects.
+    '''
     opts = parseArgs(cmd["args"])
     uname = ""
     pw = ""
@@ -31,6 +45,18 @@ def login(cmd:dict, s:requests.Session):
     print(f"Username: {uname}, Password: {pw}")
 
 def parseArgs(pOpts:list[str]) -> list:
+    '''
+    Parses the arguments from the command dictionary and translates into a list
+    of options appropriate for the login command.
+
+    Args:
+        pOpts (list[str]):  List containing the strings from the "args" element
+                            in the command dictionary.
+
+    Returns:
+        list:   Returns a list of options elements. Each element is a dictionary
+                with the form {"opt": str, "args": list[str]}.
+    '''
     opts = []
 
     if len(pOpts) == 0: return opts
@@ -52,21 +78,59 @@ def parseArgs(pOpts:list[str]) -> list:
     return opts
 
 def getUsername() -> str:
+    '''
+    Prompts the user for a username.
+
+    Args:
+        None:   No arguments.
+
+    Returns:
+        str:    String containing username as entered by user, including spaces.
+    '''
     uname = input("Username: ")
     return uname
 
 def getPassword() -> str:
+    '''
+    Uses the getpass module to prompt the user for a password while not printing
+    the input to the terminal.
+
+    Args:
+        None:   No arguments.
+
+    Returns:
+        str:    String containing password as entered by user, including spaces.
+    '''
     pw = getpass.getpass("Password: ")
     return pw
 
-def buildRequestBody(uname:str, pw: str) -> dict:
+def buildRequestBody(uname:str, pw: str) -> dict[str, str]:
+    '''
+    Builds the body of the POST request that will be sent to the SFC server.
+
+    Args:
+        uname (str):    The username provided, including any spaces.
+        pw (str):       The password provided, including any spaces.
+    
+    Returns:
+        dict(str, str): Dictionary to be used for the request body.
+    '''
     body = {}
     body["login"] = uname
     body["password"] = pw
     body["commit"] = "Sign In"
     return body
 
-def buildRequestHeaders() -> dict:
+def buildRequestHeaders() -> dict[str, str]:
+    '''
+    Builds the POST request headers to be send to the SFC server.
+
+    Args:
+        None:   No arguments.
+
+    Returns:
+        dict(str, str): Dictionary containing the headers as pairs of strings.
+    '''
     headers = {}
     headers["Accept"] = "text/html"
     headers["Accept-Language"] = "en-CA,en-US"
@@ -74,6 +138,15 @@ def buildRequestHeaders() -> dict:
     return headers
 
 def optHelp():
+    '''
+    Prints help text for login command to the terminal.
+
+    Args:
+        None:   No arguments.
+
+    Returns:
+        None:   No returned objects.
+    '''
     w = shutil.get_terminal_size().columns
     print("Usage: login [OPTION]...")
     t = "Log into the SFC server using provided username (username will be " \
