@@ -78,6 +78,17 @@ def sendPostRequest(url:str, body:dict, hdrs:dict, s:requests.Session) -> reques
     except:
         raise
 
+def sendRequest(reqType:str, headers:dict, body:dict, s:requests.Session) -> requests.Response:
+    match reqType:
+        case 'G':
+            pass
+        case 'P':
+            pass
+        case _:
+            pass
+
+    return r
+
 def clearConsole():
     if os.name == "nt":     # for Windows
         os.system("cls")
@@ -177,7 +188,6 @@ if __name__ == "__main__":
     try:
         print("Trying to connect to SFC...")
         r = sendGetRequest(url, {}, s)
-        # print(getWelcomeMessage(r.content))
     except requests.exceptions.HTTPError as err:
         print(f"HTTP error: {err}\nExiting...")
         exit()
