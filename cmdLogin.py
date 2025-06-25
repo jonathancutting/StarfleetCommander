@@ -2,6 +2,7 @@ import requests
 import getpass
 import shutil
 import textwrap
+from sfc import sendPostRequest
 
 def login(cmd:dict[str, list[str]], s:requests.Session):
     '''
@@ -43,6 +44,10 @@ def login(cmd:dict[str, list[str]], s:requests.Session):
                 return
     
     print(f"Username: {uname}, Password: {pw}")
+    body = buildRequestBody(uname, pw)
+    url = "https://playstarfleet.com/login/authenticate"
+
+    return
 
 def parseArgs(pOpts:list[str]) -> list:
     '''
