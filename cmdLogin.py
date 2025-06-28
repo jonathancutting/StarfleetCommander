@@ -2,7 +2,7 @@ import requests
 import getpass
 import shutil
 import textwrap
-from sfc import sendRequest
+from restRequests import sendRequest
 
 def login(cmd:dict[str, list[str]], s:requests.Session):
     '''
@@ -75,7 +75,11 @@ def parseArgs(pOpts:list[str]) -> list:
                 opts.append({"opt": "-h", "args": []})
             case "-u" | "--username":
                 if len(pOpts) > 1:
-                    opts.append({"opt": "-u", "args": [pOpts[1]]})
+                    x = pOpts[1]
+                    if len(pOpts) > 2:
+                        for i in range(2, len(pOpts)):
+                            x = x + " " + pOpts[i]
+                    opts.append({"opt": "-u", "args": [x]})
             case _:
                 print(f"Unknown option '{pOpts[0]}'. See login --help. Aborting login.")
                 opts.append({"opt": "-x", "args": []})
