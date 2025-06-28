@@ -2,7 +2,7 @@ import requests
 import getpass
 import shutil
 import textwrap
-from sfc import sendPostRequest
+from sfc import sendRequest
 
 def login(cmd:dict[str, list[str]], s:requests.Session):
     '''

@@ -2,13 +2,12 @@
 
 import os                           # for file system and terminal commands
 import requests                     # for REST requests
-import getpass                      # to allow non-printing input
 from bs4 import BeautifulSoup       # HTML parser
 import re                           # for regular expression processing
 import textwrap                     # to make text in terminal look pretty
 import shutil                       # to get information about terminal
 
-import cmdLogin
+from cmdLogin import login
 
 class FCOLOR:
     # https://gist.github.com/fnky/458719343aabd01cfb17a3a4f7296797
@@ -78,14 +77,43 @@ def sendPostRequest(url:str, body:dict, hdrs:dict, s:requests.Session) -> reques
     except:
         raise
 
-def sendRequest(reqType:str, headers:dict, body:dict, s:requests.Session) -> requests.Response:
-    match reqType:
-        case 'G':
-            pass
-        case 'P':
-            pass
-        case _:
-            pass
+def sendRequest(req:dict) -> requests.Response:
+    '''
+    Takes a generic request object and interprets it to determine which REST
+    function should be called. Checks first that request dictionary is properly
+    formed. Any errors raised by REST functions are passed to caller.
+
+    Args:
+        req (dict): dictionary containing the following keys:
+            url (str): the URL of the request target
+            sess (requests.Session): the current requests session object
+            hdr (dict): dictionary containing the request headers. If missing,
+                        an empty dictionary will be created for it.
+            body (dict, opt): dictionary containing the request body, optional
+                              if making a GET request
+
+    Returns:
+        requests.Response: HTML response object
+    '''
+
+    # Raise error, if necessary members are missing.
+    if not req["url"]:
+        raise ValueError("URL is missing from request!")
+    if not req["sess"]:
+        raise ValueError("Session object is missing from request!")
+    
+    # Prepare empty header dictionary, if missing.
+    if not req["hdr"]:
+        req["hdr"] = {}
+
+    # Detect appropriate request function and make call. Propogate any errors to caller.
+    try:
+        if not req["body"]:
+            r = sendGetRequest(req["url"], req["hdr"], req["sess"])
+        else:
+            r = sendPostRequest(req["url"], req["body"], req["hdr"], req["sess"])
+    except:
+        raise
 
     return r
 
@@ -187,7 +215,7 @@ if __name__ == "__main__":
     url = "https://playstarfleet.com/login"
     try:
         print("Trying to connect to SFC...")
-        r = sendGetRequest(url, {}, s)
+        r = sendRequest({"url": url, "sess":s})
     except requests.exceptions.HTTPError as err:
         print(f"HTTP error: {err}\nExiting...")
         exit()
@@ -208,7 +236,7 @@ if __name__ == "__main__":
         cmdDict = buildCommandDict(c)
         match cmdDict["cmd"]:
             case "login":
-                cmdLogin.login(cmdDict, s)
+                login(cmdDict, s)
                 #print(s.auth)
             case "exit" | "quit":
                 go = False
