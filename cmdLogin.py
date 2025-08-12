@@ -43,10 +43,17 @@ def login(cmd:dict[str, list[str]], s:requests.Session):
                 print(f"Unknown option '{opts[0]['opt']}'. Aborting login.")
                 return
     
-    print(f"Username: {uname}, Password: {pw}")
+    headers = buildRequestHeaders()
     body = buildRequestBody(uname, pw)
     url = "https://playstarfleet.com/login/authenticate"
-
+    restDict = {"url":url, "body":body, "hdr":headers, "sess":s}
+    
+    try:
+        response = sendRequest(restDict)
+    except (requests.exceptions.HTTPError, requests.RequestException, ValueError) as err:
+        print(f"Login failed. Error: {err}")
+        return
+    
     return
 
 def parseArgs(pOpts:list[str]) -> list:
@@ -142,7 +149,7 @@ def buildRequestHeaders() -> dict[str, str]:
     '''
     headers = {}
     headers["Accept"] = "text/html"
-    headers["Accept-Language"] = "en-CA,en-US"
+    headers["Accept-Language"] = "en"
     headers["Upgrade-Insecure-Requests"] = "1"
     return headers
 

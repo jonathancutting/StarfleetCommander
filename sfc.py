@@ -149,7 +149,6 @@ if __name__ == "__main__":
         match cmdDict["cmd"]:
             case "login":
                 login(cmdDict, s)
-                #print(s.auth)
             case "exit" | "quit":
                 go = False
             case "help":
