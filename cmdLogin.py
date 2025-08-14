@@ -4,7 +4,7 @@ import shutil
 import textwrap
 from restRequests import sendRequest
 
-def login(cmd:dict[str, list[str]], s:requests.Session):
+def login(cmd:dict[str, list[str]], s:requests.Session) -> str:
     '''
     Handles the "login" command from sfc main function.
 
@@ -17,7 +17,10 @@ def login(cmd:dict[str, list[str]], s:requests.Session):
         s (requests.Session):   The user's request session object.
     
     Returns:
-        None:   No returned objects.
+        str:    If the login was successful, the function will return a string
+                containing the HTML text of the returned page.
+                If the login was unsuccessful, the function will return an empty
+                string, and an error message may be printed to the console.
     '''
     opts = parseArgs(cmd["args"])
     uname = ""
@@ -30,7 +33,7 @@ def login(cmd:dict[str, list[str]], s:requests.Session):
         match opts[0]["opt"]:
             case "-h":
                 optHelp()
-                return
+                return ""
             case "-u":
                 if len(opts[0]["args"]) > 0:
                     uname = opts[0]["args"][0]
@@ -38,10 +41,10 @@ def login(cmd:dict[str, list[str]], s:requests.Session):
                     uname = getUsername()
                 pw = getPassword()
             case "-x":
-                return
+                return ""
             case _:
                 print(f"Unknown option '{opts[0]['opt']}'. Aborting login.")
-                return
+                return ""
     
     headers = buildRequestHeaders()
     body = buildRequestBody(uname, pw)
@@ -52,9 +55,9 @@ def login(cmd:dict[str, list[str]], s:requests.Session):
         response = sendRequest(restDict)
     except (requests.exceptions.HTTPError, requests.RequestException, ValueError) as err:
         print(f"Login failed. Error: {err}")
-        return
+        return ""
     
-    return
+    return response.text
 
 def parseArgs(pOpts:list[str]) -> list:
     '''

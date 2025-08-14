@@ -152,7 +152,7 @@ if __name__ == "__main__":
             case "exit" | "quit":
                 go = False
             case "help":
-                cmdHelp()
+                r = cmdHelp()
             case "":
                 pass
             case _:
