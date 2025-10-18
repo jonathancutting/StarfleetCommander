@@ -57,6 +57,10 @@ def login(cmd:dict[str, list[str]], s:requests.Session) -> str:
         print(f"Login failed. Error: {err}")
         return ""
     
+    # Check for successful login here.
+    # If login successful, return repsonse.text.
+    # If login unsuccessful, tell user and return empty string.
+    # Unsuccessful login will still return a valid HTML response.
     return response.text
 
 def parseArgs(pOpts:list[str]) -> list:

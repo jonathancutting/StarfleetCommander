@@ -35,7 +35,7 @@ def clearConsole():
     else:                   # for Linux/Mac
         os.system("clear")
 
-def getWelcomeMessage(htm:bytes) -> str:
+def getWelcomeMessage(htm:str) -> str:
     '''
     Uses BeautifulSoup to extract the welcome message from the login page and
     returns a formatted string.
@@ -69,8 +69,8 @@ def cmdHelp():
     s = []
     w = shutil.get_terminal_size().columns
     t = "Starfleet Commander Terminal Mode functions in much the same way " \
-     "as the terminal in Linux does. At the command prompt, you type a command " \
-     "you want to perform, along with any options relevant to that command."
+     "as the terminal in Linux. At the command prompt, you type a command " \
+     "you want to perform, along with any desired options supported by that command."
     s.append(textwrap.fill(t, w))
     
     t = "For example, from the prompt \"sfc:~$\", you might type \"planets\" to " \
@@ -85,10 +85,10 @@ def cmdHelp():
     s.append(textwrap.fill(t, w))
 
     t = "For help with a specific command or to see its available options, type " \
-     "the command followed by \"--help\"."
+     "the command followed by \"--help\" or \"-h\"."
     s.append(textwrap.fill(t, w))
 
-    t = "Current commands are: login, help, exit, quit"
+    t = "Currently supported commands are: login, help, exit, quit"
     s.append(textwrap.fill(t, w))
     
     for l in s:
@@ -121,6 +121,35 @@ def buildCommandDict(s:str) -> dict:
             cmdDict["args"].append(a)
     return cmdDict
 
+def getPrompt(username:str, path:str) -> str:
+    '''
+    Builds the terminal string that prompts user for a command. The string is of
+    the form "[user@]sfc:[path]$". Before login, this is as simple as "sfc:~$",
+    but after login, the username and path will be filled in. The string is also
+    colour-coded to mimic the Ubuntu 22.05 terminal.
+
+    Args:
+        username (str): contains the username. If the user has not logged in
+                        yet, this will be empty.
+        path (str): contains the current path of the user. For example, if the
+                    user is viewing the fleet page, it will be "fleet". If the
+                    user is viewing the planet page, it will be
+                    "planets/[planetname]".
+    Returns:
+        str: string containing the full, colour-coded command prompt.
+    '''
+
+    if len(path) == 0: path = "~"
+    if len(username) == 0:
+        prompt = f"{FCOLOR.BOLD}{FCOLOR.GREEN}sfc{FCOLOR.DEFAULT}:" \
+                 f"{FCOLOR.BLUE}{path}{FCOLOR.DEFAULT}${FCOLOR.RESET} "
+    else:
+        prompt = f"{FCOLOR.BOLD}{FCOLOR.GREEN}{username}@sfc{FCOLOR.DEFAULT}:" \
+                 f"{FCOLOR.BLUE}{path}{FCOLOR.DEFAULT}${FCOLOR.RESET} "
+
+    # "{FCOLOR.BOLD}{FCOLOR.GREEN}sfc{FCOLOR.DEFAULT}:{FCOLOR.BLUE}~{FCOLOR.DEFAULT}${FCOLOR.RESET} "
+    return prompt
+
 if __name__ == "__main__":
     # Start session and get login page.
     s = requests.Session()
@@ -140,15 +169,23 @@ if __name__ == "__main__":
     
     # Start terminal interface.
     clearConsole()
+    print(getWelcomeMessage(r.content.decode()))
+    print()
     print(f"   {FCOLOR.BOLD}STARFLEET COMMANDER - Terminal Interface{FCOLOR.RESET}")
     print("==============================================")
-    go = True
+    username = "" # blank until login
+    path = "~"    # userhome until login
+    go = True     # to start, but ensure this is set to false to break loop!
     while go:
-        c = input(f"{FCOLOR.BOLD}{FCOLOR.GREEN}sfc{FCOLOR.DEFAULT}:{FCOLOR.BLUE}~{FCOLOR.DEFAULT}${FCOLOR.RESET} ")
+        prompt = getPrompt(username, path)
+        c = input(prompt)
         cmdDict = buildCommandDict(c)
         match cmdDict["cmd"]:
             case "login":
-                login(cmdDict, s)
+                rtnStr = login(cmdDict, s)
+                if len(rtnStr) > 0:
+                    username = "yoozernaym"
+                    path = "~/getbent"
             case "exit" | "quit":
                 go = False
             case "help":
@@ -156,7 +193,8 @@ if __name__ == "__main__":
             case "":
                 pass
             case _:
-                print(f"Command '{cmdDict['cmd']}' not found. See 'help' for a list of available commands.")
+                print(f"Command '{cmdDict['cmd']}' not found. See 'help' for " \
+                      "a list of available commands.")
 
     print("Signing out. Goodbye!")
     exit()
