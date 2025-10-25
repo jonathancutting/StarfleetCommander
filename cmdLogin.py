@@ -57,11 +57,15 @@ def login(cmd:dict[str, list[str]], s:requests.Session) -> str:
         print(f"Login failed. Error: {err}")
         return ""
     
-    # Check for successful login here.
-    # If login successful, return repsonse.text.
-    # If login unsuccessful, tell user and return empty string.
-    # Unsuccessful login will still return a valid HTML response.
-    return response.text
+    # If it gets to this point, then a response should have been received.
+    # Check for successful login.
+    if response.text.find("Invalid login or password") != -1:
+        # Login was unsuccessful. Tell user and return empty string.
+        print(f"Login failed. Invalid username or password.")
+        return ""
+    else:
+        # Login was successful. Return repsonse HTML.
+        return response.text
 
 def parseArgs(pOpts:list[str]) -> list:
     '''

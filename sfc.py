@@ -150,6 +150,30 @@ def getPrompt(username:str, path:str) -> str:
     # "{FCOLOR.BOLD}{FCOLOR.GREEN}sfc{FCOLOR.DEFAULT}:{FCOLOR.BLUE}~{FCOLOR.DEFAULT}${FCOLOR.RESET} "
     return prompt
 
+def getUsername(htm:str) -> str:
+    '''
+    Finds and returns the username from the passed HTML string. This function
+    expects the HTML string to be the REST response containing the "home" page
+    of a planet. Function uses BeautifulSoup to make the HTML parsing easier.
+
+    Args:
+        htm (str): HTML string containing a planet's "home" page. Passing a
+                   different page will cause an error or undefined behaviour.
+    
+    Returns:
+        str: The username string. If the username isn't found, an empty string
+             is returned.
+    '''
+    uname = ""
+    soup = BeautifulSoup(htm, "html.parser")
+    # Find the div elements with class "right_column". There should be only one.
+    div = soup.find_all('div', class_='right_column')
+    if not div is None: # Check that the div was found.
+        a = div[0].find_all('a') # We want the first (and only) div.
+        if not a is None: # Again, check that an anchor was found.
+            uname = a[0].get_text() # We're looking for the first anchor.
+    return uname
+
 if __name__ == "__main__":
     # Start session and get login page.
     s = requests.Session()
@@ -184,12 +208,15 @@ if __name__ == "__main__":
             case "login":
                 rtnStr = login(cmdDict, s)
                 if len(rtnStr) > 0:
-                    username = "yoozernaym"
+                    username = getUsername(rtnStr)
                     path = "~/getbent"
             case "exit" | "quit":
                 go = False
             case "help":
                 r = cmdHelp()
+            case "logout":
+                print(f"Did you mean \"quit\" or \"exit\"? Both of those " \
+                      "commands will log you out.")
             case "":
                 pass
             case _:
