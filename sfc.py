@@ -6,9 +6,10 @@ from bs4 import BeautifulSoup       # HTML parser
 import re                           # for regular expression processing
 import textwrap                     # to make text in terminal look pretty
 import shutil                       # to get information about terminal
+import logging                      # built-in Python logging
 
 from restRequests import sendRequest
-from cmdLogin import login
+from cmdLogin import login, logout
 
 class FCOLOR:
     # https://gist.github.com/fnky/458719343aabd01cfb17a3a4f7296797
@@ -175,6 +176,9 @@ def getUsername(htm:str) -> str:
     return uname
 
 if __name__ == "__main__":
+    logging.basicConfig()                   # configure the logger
+    logger = logging.getLogger(__name__)    # get the logger instance
+
     # Start session and get login page.
     s = requests.Session()
     url = "https://playstarfleet.com/login"
@@ -211,6 +215,7 @@ if __name__ == "__main__":
                     username = getUsername(rtnStr)
                     path = "~/getbent"
             case "exit" | "quit" | "logout":
+                logout(s)
                 go = False
             case "help":
                 r = cmdHelp()

@@ -150,7 +150,7 @@ def buildRequestBody(uname:str, pw: str) -> dict[str, str]:
 
 def buildRequestHeaders() -> dict[str, str]:
     '''
-    Builds the POST request headers to be send to the SFC server.
+    Builds the POST request headers to be sent to the SFC server.
 
     Args:
         None:   No arguments.
@@ -189,3 +189,23 @@ def optHelp():
           "                        prompt for password")
     print("    login --username    will prompt for username, since no argument\n" \
           "                        was supplied to the --username option")
+
+def logout(sess:requests.Session) -> None:
+    '''
+    Handles the logout command from the sfc module main function.
+
+    Args:
+        sess (requests.Session):    The user's request Session object.
+
+    Returns:
+        None:   Function does not return an object.
+    '''
+    url = "https://playstarfleet.com/login/logout"
+    hdr = buildRequestHeaders()
+    restDict = {"url":url, "hdr": hdr, "sess": sess}
+    try:
+        resp = sendRequest(restDict)
+        if resp.headers['location'] != "https://playstarfleet.com/login?view=login":
+            print(f"Logout unsuccessful. Quitting and destroying login token, anyway.")
+    except (requests.exceptions.HTTPError, requests.RequestException, ValueError) as err:
+        print(f"Logout failed. Error: {err}")
