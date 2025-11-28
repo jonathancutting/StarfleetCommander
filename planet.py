@@ -1,9 +1,9 @@
 class Planet:
-    def __init__(self, detail:dict):
+    def __init__(self):
         # data members (instance variables)
-        self.id = detail["id"]
-        self.name = detail["name"]
-        self.location = parseLocation(detail["location"])
+        self.id = ""
+        self.name = ""
+        self.location = {}
         self.resources = {}
         self.mines = {}
         self.ships = {}
@@ -23,11 +23,18 @@ def parseLocation(loc:str) -> dict:
         dict (str, str):    dictionary containing separated galaxy, system, and
                             planet slot locations.
     '''
-    location = {}
-
-    elems = loc.split(":")
-    location["galaxy"] = elems[0]
-    location["system"] = elems[1]
-    location["slot"] = elems[2]
+    location = {"galaxy":0, "system":0, "slot":0, "moon":False}
+    try:
+        elems = loc.split(":")
+        location["galaxy"] = int(elems[0])
+        location["system"] = int(elems[1])
+        if str(elems[2])[-1] == "m":
+            location["slot"] = int(elems[2][:-1])
+            location["moon"] = True
+        else:
+            location["slot"] = int(elems[2])
+            location["moon"] = False
+    except (ValueError, TypeError) as e:
+        print(f"Problem loading planet location.")
 
     return location

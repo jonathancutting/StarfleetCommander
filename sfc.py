@@ -210,18 +210,14 @@ if __name__ == "__main__":
                 if len(rtnStr) > 0:
                     username = getUsername(rtnStr)
                     path = "~/getbent"
-            case "exit" | "quit":
+            case "exit" | "quit" | "logout":
                 go = False
             case "help":
                 r = cmdHelp()
-            case "logout":
-                print(f"Did you mean \"quit\" or \"exit\"? Both of those " \
-                      "commands will log you out.")
             case "":
                 pass
             case _:
-                print(f"Command '{cmdDict['cmd']}' not found. See 'help' for " \
-                      "a list of available commands.")
+                print(f"Command '{cmdDict['cmd']}' not found. See 'help' for a list of available commands.")
 
     print("Signing out. Goodbye!")
     exit()
