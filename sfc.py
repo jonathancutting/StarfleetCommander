@@ -224,5 +224,5 @@ if __name__ == "__main__":
             case _:
                 print(f"Command '{cmdDict['cmd']}' not found. See 'help' for a list of available commands.")
 
-    print("Signing out. Goodbye!")
+    print("Thank you for playing. Goodbye!")
     exit()

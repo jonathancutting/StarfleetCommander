@@ -200,12 +200,15 @@ def logout(sess:requests.Session) -> None:
     Returns:
         None:   Function does not return an object.
     '''
+    print("Logging out...")
     url = "https://playstarfleet.com/login/logout"
     hdr = buildRequestHeaders()
     restDict = {"url":url, "hdr": hdr, "sess": sess}
     try:
         resp = sendRequest(restDict)
-        if resp.headers['location'] != "https://playstarfleet.com/login?view=login":
+        if resp.url != "https://playstarfleet.com/login?view=login":
             print(f"Logout unsuccessful. Quitting and destroying login token, anyway.")
+        else:
+            print("Logout successful.")
     except (requests.exceptions.HTTPError, requests.RequestException, ValueError) as err:
         print(f"Logout failed. Error: {err}")
