@@ -175,6 +175,33 @@ def getUsername(htm:str) -> str:
             uname = a[0].get_text() # We're looking for the first anchor.
     return uname
 
+def getPath(htm:str) -> str:
+    '''
+    Finds and returns the path from the passed HTML string. Function uses
+    BeautifulSoup to make the HTML parsing easier.
+
+    Args:
+        htm (str): HTML string. This can be any HTML page from SFC, except the
+                   site homepage.
+
+    Returns:
+        str: The path string. If the path isn't found, an empty string is
+             returned.
+    '''
+    path = ""
+    soup = BeautifulSoup(htm, "html.parser")
+    titleElem = soup.title
+    if titleElem:       # Check that the title element exists.
+        titleStr = titleElem.string
+        if titleStr:    # Check that the title actually contains text.
+            titles = titleStr.split(" - ")
+        else:
+            return ""
+    else:
+        return ""
+
+    return path
+
 if __name__ == "__main__":
     logging.basicConfig()                   # configure the logger
     logger = logging.getLogger(__name__)    # get the logger instance
