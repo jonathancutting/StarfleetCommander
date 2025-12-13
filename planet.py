@@ -1,3 +1,7 @@
+import logging      # built-in Python logging
+
+logger = logging.getLogger(__name__)    # set module-level logger object
+
 class Planet:
     def __init__(self):
         # data members (instance variables)

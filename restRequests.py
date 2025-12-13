@@ -1,4 +1,7 @@
-import requests
+import requests     # built-in REST request handling
+import logging      # built-in Python logging
+
+logger = logging.getLogger(__name__)    # set module-level logger object
 
 def sendGetRequest(url:str, params:dict, s:requests.Session) -> requests.Response:
     '''

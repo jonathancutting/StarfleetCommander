@@ -1,8 +1,11 @@
-import requests
-import getpass
-import shutil
-import textwrap
-from restRequests import sendRequest
+import requests                         # to handle REST exceptions
+import getpass                          # to obfuscate password while typing
+import shutil                           # to get terminal window properties
+import textwrap                         # to gracefully wrap text in terminal
+import logging                          # built-in Python logging
+from restRequests import sendRequest    # to send REST requests
+
+logger = logging.getLogger(__name__)    # set module-level logging object
 
 def login(cmd:dict[str, list[str]], s:requests.Session) -> str:
     '''

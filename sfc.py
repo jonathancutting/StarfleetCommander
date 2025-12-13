@@ -11,6 +11,9 @@ import logging                      # built-in Python logging
 from restRequests import sendRequest
 from cmdLogin import login, logout
 
+logger = logging.getLogger(__name__)    # set module-level logger object
+LOG_FILE = "sfc.log"                    # TODO: get this from config file
+
 class FCOLOR:
     # https://gist.github.com/fnky/458719343aabd01cfb17a3a4f7296797
     BLACK = "\033[30m"
@@ -31,9 +34,6 @@ class FCOLOR:
     STRIKETHROUGH = "\033[9m"
 
 def main():
-    # logging.basicConfig()                   # configure the logger
-    # logger = logging.getLogger(__name__)    # get the logger instance
-
     # Start session and get login page.
     s = requests.Session()
     url = "https://playstarfleet.com/login"
@@ -81,6 +81,15 @@ def main():
 
     print("Thank you for playing. Goodbye!")
     exit()
+
+def configLogging():
+    '''
+    Configures the root logger, then tests to see if log file can be opened and
+    written. If it can't, logging will be defaulted to the console. Since this
+    config is written to the root logger, and since this config is run before
+    any external functions are used, all new logger objects will pull this
+    config unless explicitly overwritten in that module.
+    '''
 
 def clearConsole():
     if os.name == "nt":     # for Windows
