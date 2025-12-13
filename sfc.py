@@ -30,6 +30,58 @@ class FCOLOR:
     BLINKING = "\033[5m"
     STRIKETHROUGH = "\033[9m"
 
+def main():
+    # logging.basicConfig()                   # configure the logger
+    # logger = logging.getLogger(__name__)    # get the logger instance
+
+    # Start session and get login page.
+    s = requests.Session()
+    url = "https://playstarfleet.com/login"
+    try:
+        print("Trying to connect to SFC...")
+        r = sendRequest({"url": url, "sess":s})
+    except requests.exceptions.HTTPError as err:
+        print(f"HTTP error: {err}\nExiting...")
+        exit()
+    except requests.RequestException as err:
+        print(f"Request error: {err}\nExiting...")
+        exit()
+    except ValueError as err:
+        print(f"Error: {err}\nExiting...")
+        exit()
+    
+    # Start terminal interface.
+    clearConsole()
+    print(getWelcomeMessage(r.content.decode()))
+    print()
+    print(f"   {FCOLOR.BOLD}STARFLEET COMMANDER - Terminal Interface{FCOLOR.RESET}")
+    print("==============================================")
+    username = "" # blank until login
+    path = "~"    # userhome until login
+    go = True     # to start, but ensure this is set to false to break loop!
+    while go:
+        prompt = getPrompt(username, path)
+        c = input(prompt)
+        cmdDict = buildCommandDict(c)
+        match cmdDict["cmd"]:
+            case "login":
+                rtnStr = login(cmdDict, s)
+                if len(rtnStr) > 0:
+                    username = getUsername(rtnStr)
+                    path = "~/getbent"
+            case "exit" | "quit" | "logout":
+                logout(s)
+                go = False
+            case "help":
+                r = cmdHelp()
+            case "":
+                pass
+            case _:
+                print(f"Command '{cmdDict['cmd']}' not found. See 'help' for a list of available commands.")
+
+    print("Thank you for playing. Goodbye!")
+    exit()
+
 def clearConsole():
     if os.name == "nt":     # for Windows
         os.system("cls")
@@ -203,53 +255,4 @@ def getPath(htm:str) -> str:
     return path
 
 if __name__ == "__main__":
-    logging.basicConfig()                   # configure the logger
-    logger = logging.getLogger(__name__)    # get the logger instance
-
-    # Start session and get login page.
-    s = requests.Session()
-    url = "https://playstarfleet.com/login"
-    try:
-        print("Trying to connect to SFC...")
-        r = sendRequest({"url": url, "sess":s})
-    except requests.exceptions.HTTPError as err:
-        print(f"HTTP error: {err}\nExiting...")
-        exit()
-    except requests.RequestException as err:
-        print(f"Request error: {err}\nExiting...")
-        exit()
-    except ValueError as err:
-        print(f"Error: {err}\nExiting...")
-        exit()
-    
-    # Start terminal interface.
-    clearConsole()
-    print(getWelcomeMessage(r.content.decode()))
-    print()
-    print(f"   {FCOLOR.BOLD}STARFLEET COMMANDER - Terminal Interface{FCOLOR.RESET}")
-    print("==============================================")
-    username = "" # blank until login
-    path = "~"    # userhome until login
-    go = True     # to start, but ensure this is set to false to break loop!
-    while go:
-        prompt = getPrompt(username, path)
-        c = input(prompt)
-        cmdDict = buildCommandDict(c)
-        match cmdDict["cmd"]:
-            case "login":
-                rtnStr = login(cmdDict, s)
-                if len(rtnStr) > 0:
-                    username = getUsername(rtnStr)
-                    path = "~/getbent"
-            case "exit" | "quit" | "logout":
-                logout(s)
-                go = False
-            case "help":
-                r = cmdHelp()
-            case "":
-                pass
-            case _:
-                print(f"Command '{cmdDict['cmd']}' not found. See 'help' for a list of available commands.")
-
-    print("Thank you for playing. Goodbye!")
-    exit()
+    main()
