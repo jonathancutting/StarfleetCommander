@@ -11,7 +11,6 @@ import logging                      # built-in Python logging
 from restRequests import sendRequest
 from cmdLogin import login, logout
 
-logger = logging.getLogger(__name__)    # set module-level logger object
 LOG_FILE = "sfc.log"                    # TODO: get this from config file
 
 class FCOLOR:
