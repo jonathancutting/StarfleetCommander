@@ -7,11 +7,11 @@ import re                           # for regular expression processing
 import textwrap                     # to make text in terminal look pretty
 import shutil                       # to get information about terminal
 import logging                      # built-in Python logging
+import sys                          # for standard I/O
 
-from restRequests import sendRequest
-from cmdLogin import login, logout
-
-LOG_FILE = "sfc.log"                    # TODO: get this from config file
+import plogger                          # for logging with fallback
+from restRequests import sendRequest    # for standardized REST functionality
+from cmdLogin import login, logout      # for login and logout commands
 
 class FCOLOR:
     # https://gist.github.com/fnky/458719343aabd01cfb17a3a4f7296797
@@ -33,6 +33,10 @@ class FCOLOR:
     STRIKETHROUGH = "\033[9m"
 
 def main():
+    # Configure the logger.
+    plogger.configRootLogger()
+    logger = logging.getLogger(__name__)
+
     # Start session and get login page.
     s = requests.Session()
     url = "https://playstarfleet.com/login"
@@ -80,15 +84,6 @@ def main():
 
     print("Thank you for playing. Goodbye!")
     exit()
-
-def configLogging():
-    '''
-    Configures the root logger, then tests to see if log file can be opened and
-    written. If it can't, logging will be defaulted to the console. Since this
-    config is written to the root logger, and since this config is run before
-    any external functions are used, all new logger objects will pull this
-    config unless explicitly overwritten in that module.
-    '''
 
 def clearConsole():
     if os.name == "nt":     # for Windows
