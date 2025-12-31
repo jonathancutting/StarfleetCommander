@@ -79,8 +79,8 @@ def configRootLogger():
 
     # Create the logging formatter.
     formatter = logging.Formatter(
-        "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-        datefmt="%Y-%m-%dT%H:%M:%s.%03d"
+        "%(asctime)s.%(msecs)03d | %(name)s | %(levelname)s | %(message)s",
+        datefmt="%Y-%m-%dT%H:%M:%S"
     )
 
     # Create the fallback (console) handler.

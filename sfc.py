@@ -36,6 +36,7 @@ def main():
     # Configure the logger.
     plogger.configRootLogger()
     logger = logging.getLogger(__name__)
+    logger.info("Application started.")
 
     # Start session and get login page.
     s = requests.Session()
