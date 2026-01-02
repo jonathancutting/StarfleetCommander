@@ -11,20 +11,23 @@ def login(cmd:dict[str, list[str]], s:requests.Session) -> str:
     '''
     Handles the "login" command from sfc main function.
 
-    Args:
-        cmd (dict):             Dictionary of the user-entered command string,
-                                as parsed by the buildCommandDict function in
-                                sfc.py. The dictionary should contain two 
-                                elements: first, a string with the command, and
-                                secondly, a list of strings with the arguments.
-        s (requests.Session):   The user's request session object.
-    
-    Returns:
-        str:    If the login was successful, the function will return a string
+    :param cmd: Dictionary of the user-entered command string, as parsed by the
+                buildCommandDict function in sfc.py. The dictionary should
+                contain two elements: first, a string with the command, and
+                secondly, a list of strings with the arguments.
+    :type cmd:  dict[str, list[str]]
+
+    :param s:   The user's request session object.
+    :type s:    requests.Session
+
+    :return:    If the login was successful, the function will return a string
                 containing the HTML text of the returned page.
                 If the login was unsuccessful, the function will return an empty
                 string, and an error message may be printed to the console.
+    :rtype:     str
     '''
+
+    logger.debug("Entered function %(funcName)s.")
     opts = parseArgs(cmd["args"])
     uname = ""
     pw = ""
@@ -46,6 +49,7 @@ def login(cmd:dict[str, list[str]], s:requests.Session) -> str:
             case "-x":
                 return ""
             case _:
+                logger.info("Unknown option supplied for login: %s.", opts[0]['opt'])
                 print(f"Unknown option '{opts[0]['opt']}'. Aborting login.")
                 return ""
     
@@ -55,19 +59,23 @@ def login(cmd:dict[str, list[str]], s:requests.Session) -> str:
     restDict = {"url":url, "body":body, "hdr":headers, "sess":s}
     
     try:
+        logger.info("Logging in...")
         response = sendRequest(restDict)
-    except (requests.exceptions.HTTPError, requests.RequestException, ValueError) as err:
-        print(f"Login failed. Error: {err}")
+    except (requests.exceptions.HTTPError, requests.RequestException, ValueError):
+        print("There was a problem logging in. Login failed.")
+        logger.exception("Error encountered while attempting to log in.")
         return ""
     
     # If it gets to this point, then a response should have been received.
     # Check for successful login.
     if response.text.find("Invalid login or password") != -1:
         # Login was unsuccessful. Tell user and return empty string.
-        print(f"Login failed. Invalid username or password.")
+        logger.info("User supplied an invalid username or password for login.")
+        print("Login failed. Invalid username or password.")
         return ""
     else:
         # Login was successful. Return repsonse HTML.
+        logger.info("Login successful.")
         return response.text
 
 def parseArgs(pOpts:list[str]) -> list:
@@ -83,12 +91,15 @@ def parseArgs(pOpts:list[str]) -> list:
         list:   Returns a list of options elements. Each element is a dictionary
                 with the form {"opt": str, "args": list[str]}.
     '''
+
+    logger.debug("Entered function %(funcName)s.")
     opts = []
 
     if len(pOpts) == 0: return opts
 
     if pOpts[0][0] != "-":
-        print(f"Malformed option '{pOpts[0]}'. See login --help. Aborting login.")
+        print("The login option you supplied is incorrect. See login --help.")
+        logger.info("User supplied malformed option '%s' for login.", pOpts[0])
         opts.append({"opt": "-x", "args": []})
     else:
         match pOpts[0]:
@@ -102,7 +113,8 @@ def parseArgs(pOpts:list[str]) -> list:
                             x = x + " " + pOpts[i]
                     opts.append({"opt": "-u", "args": [x]})
             case _:
-                print(f"Unknown option '{pOpts[0]}'. See login --help. Aborting login.")
+                print("The login option you supplied is incorrect. See login --help.")
+                logger.info("User supplied unknown option %s for login.", pOpts[0])
                 opts.append({"opt": "-x", "args": []})
 
     return opts
@@ -117,6 +129,7 @@ def getUsername() -> str:
     Returns:
         str:    String containing username as entered by user, including spaces.
     '''
+
     uname = input("Username: ")
     return uname
 
@@ -131,6 +144,7 @@ def getPassword() -> str:
     Returns:
         str:    String containing password as entered by user, including spaces.
     '''
+
     pw = getpass.getpass("Password: ")
     return pw
 
@@ -203,15 +217,17 @@ def logout(sess:requests.Session) -> None:
     Returns:
         None:   Function does not return an object.
     '''
-    print("Logging out...")
+
+    logger.debug("Entered function %(funcName)s.")
+    logger.info("Logging out...")
     url = "https://playstarfleet.com/login/logout"
     hdr = buildRequestHeaders()
     restDict = {"url":url, "hdr": hdr, "sess": sess}
     try:
         resp = sendRequest(restDict)
         if resp.url != "https://playstarfleet.com/login?view=login":
-            print(f"Logout unsuccessful. Quitting and destroying login token, anyway.")
+            logger.warning("Logout unsuccessful. Unexpected response URL.")
         else:
-            print("Logout successful.")
-    except (requests.exceptions.HTTPError, requests.RequestException, ValueError) as err:
-        print(f"Logout failed. Error: {err}")
+            logger.info("Logout successful.")
+    except (requests.exceptions.HTTPError, requests.RequestException, ValueError):
+        logger.exception("Error encountered while trying to log out.")

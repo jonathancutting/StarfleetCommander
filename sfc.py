@@ -45,16 +45,19 @@ def main():
     s = requests.Session()
     url = "https://playstarfleet.com/login"
     try:
-        print("Trying to connect to SFC...")
+        logger.debug("Trying to connect to SFC...")
         r = sendRequest({"url": url, "sess":s})
-    except requests.exceptions.HTTPError as err:
-        print(f"HTTP error: {err}\nExiting...")
+    except requests.exceptions.HTTPError:
+        logger.exception("HTTP error encountered while trying to connect to SFC login page.")
+        print("An error occurred while trying to connect to SFC. The application will now exit.")
         exit()
-    except requests.RequestException as err:
-        print(f"Request error: {err}\nExiting...")
+    except requests.RequestException:
+        logger.exception("Request exception encountered while trying to connect to SFC login page.")
+        print("An error occurred while trying to connect to SFC. The application will now exit.")
         exit()
-    except ValueError as err:
-        print(f"Error: {err}\nExiting...")
+    except ValueError:
+        logger.exception("ValueError experienced while trying to connect to SFC loging page.")
+        print("An error occurred while trying to connect to SFC. The application will now exit.")
         exit()
     
     # Start terminal interface.
@@ -68,7 +71,11 @@ def main():
     while go:
         prompt = getPrompt(username, path)
         c = input(prompt)
+        if c.upper() == c:  # Catch users who like to yell.
+            print("Please turn off your caps lock and try again.")
+            logger.debug("User has caps lock turned on.")
         cmdDict = buildCommandDict(c)
+        logger.debug("User entered command '%s' that was parsed to '%s'.", c, cmdDict)
         match cmdDict["cmd"]:
             case "login":
                 rtnStr = login(cmdDict, s)
@@ -86,6 +93,7 @@ def main():
                 print(f"Command '{cmdDict['cmd']}' not found. See 'help' for a list of available commands.")
 
     print("Thank you for playing. Goodbye!")
+    logger.info("Exiting application.")
     exit()
 
 def clearConsole():

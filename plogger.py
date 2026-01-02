@@ -75,11 +75,13 @@ def configRootLogger(cfg:dict[str, str]) -> logging.Logger:
     logging fails for whatever reason, a fallback handler is used, writing all
     further logs to the console.
     
-    :param cfg: Plogger configs
+    :param cfg: Plogger configs. If "output", "level", or "filePath" are missing
+                or malformed, then defaults will be used.
     :type cfg: dict
 
-    :return logging.Logger: Configured root logger. DO NOT USE. Always create
-                            module-level logger using logging.getLogger(__name__).
+    :return: Configured root logger. DO NOT USE. Always create module-level
+             logger using logging.getLogger(__name__).
+    :rtype: logging.Logger
     '''
 
     # Validate config parms.
@@ -90,7 +92,7 @@ def configRootLogger(cfg:dict[str, str]) -> logging.Logger:
         print(f"No log level found in config. Defaulting to {logging.getLevelName(LOG_LEVEL)}.")
         cfg["level"] = logging.getLevelName(LOG_LEVEL)
 
-    match cfg["level"].upper:
+    match cfg["level"].upper():
         case "CRITICAL": logLevel = logging.CRITICAL
         case "ERROR": logLevel = logging.ERROR
         case "WARNING": logLevel = logging.WARNING
@@ -116,7 +118,7 @@ def configRootLogger(cfg:dict[str, str]) -> logging.Logger:
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setFormatter(formatter)
 
-    if (cfg["output"].lower == "file"):
+    if (cfg["output"].lower() == "file"):
         # Create the primary file handler with fallback.
         f = LOG_FILE
         if ("filePath" in cfg): f = cfg["filePath"]
@@ -137,7 +139,7 @@ def configRootLogger(cfg:dict[str, str]) -> logging.Logger:
         except OSError as e:
             root_logger.warning("Log file write failed! Subsequent log messages "
                                 "will be printed to the console.")
-    elif (cfg["output"].lower == "console"):
+    elif (cfg["output"].lower() == "console"):
         root_logger.addHandler(console_handler)
 
     return root_logger
