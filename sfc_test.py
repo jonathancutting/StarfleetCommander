@@ -1,5 +1,6 @@
 import unittest
 from sfc import buildCommandDict
+from sfc import loadConfig
 
 class Tests(unittest.TestCase):
     def test_buildCommandDict_blank(self):
@@ -21,6 +22,10 @@ class Tests(unittest.TestCase):
         passed = "fleet --return Molos"
         expected = {"cmd": "fleet", "args": ["--return", "Molos"]}
         self.assertEqual(buildCommandDict(passed), expected)
+
+    def test_loadConfig(self):
+        expected = {"plogger": {"output": "file", "filePath": "sfc.log", "level": "DEBUG"}}
+        self.assertEqual(loadConfig(), expected)
 
 if __name__ == "__main__":
     unittest.main()

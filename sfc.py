@@ -7,9 +7,9 @@ import re                           # for regular expression processing
 import textwrap                     # to make text in terminal look pretty
 import shutil                       # to get information about terminal
 import logging                      # built-in Python logging
-import sys                          # for standard I/O
+import json                         # for config file parsing
 
-import plogger                          # for logging with fallback
+import plogger                          # for logging with fallback config
 from restRequests import sendRequest    # for standardized REST functionality
 from cmdLogin import login, logout      # for login and logout commands
 
@@ -33,8 +33,11 @@ class FCOLOR:
     STRIKETHROUGH = "\033[9m"
 
 def main():
+    clearConsole()
+    cfg = loadConfig()  # Get config from file.
+
     # Configure the logger.
-    plogger.configRootLogger()
+    plogger.configRootLogger(cfg["plogger"])
     logger = logging.getLogger(__name__)
     logger.info("Application started.")
 
@@ -55,7 +58,6 @@ def main():
         exit()
     
     # Start terminal interface.
-    clearConsole()
     print(getWelcomeMessage(r.content.decode()))
     print()
     print(f"   {FCOLOR.BOLD}STARFLEET COMMANDER - Terminal Interface{FCOLOR.RESET}")
@@ -257,6 +259,31 @@ def getPath(htm:str) -> str:
         return ""
 
     return path
+
+def loadConfig() -> dict:
+    '''
+    Attempts to load the application config from a file. If the file cannot be
+    read or does not exist, an error message is sent to the console, and default
+    config values are set.
+    
+    :return: Dictionary containing application config choices.
+    :rtype: dict[str, Any]
+    '''
+
+    # Set defaults.
+    config = {}
+
+    try:
+        with open("sfc.cfg", 'r') as f:
+            config = json.load(f)
+            f.close()
+    except OSError as e:
+        print(f"Error while reading config file: {e}. Using defaults.")
+
+    if not "plogger" in config:
+        config["plogger"] = {}
+
+    return config
 
 if __name__ == "__main__":
     main()

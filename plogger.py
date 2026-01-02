@@ -3,8 +3,8 @@
 import logging              # for built-in logging functionality
 import sys                  # for standard I/O
 
-LOG_FILE = "sfc.log"        # log file path. TODO: get this from config file
-LOG_LEVEL = logging.DEBUG   # default logging level. TODO: get this from file
+LOG_FILE = "sfc.txt"        # default log file path
+LOG_LEVEL = logging.DEBUG   # default log level
 
 class LoggingFileHandler(logging.FileHandler):
     '''
@@ -29,6 +29,7 @@ class LoggingFileHandler(logging.FileHandler):
         fallback handler and logs a CRITICAL message about the failure.
         
         :param record: LogRecord object containing the log record to emit.
+        :type record: logging.LogRecord
         '''
 
         # If fallback is already active, use the fallback handler immediately.
@@ -68,14 +69,37 @@ class LoggingFileHandler(logging.FileHandler):
                 # Now, emit the original message using the fallback handler.
                 self.fallback_handler.emit(record)
 
-def configRootLogger():
+def configRootLogger(cfg:dict[str, str]) -> logging.Logger:
     '''
-    Configures the root logger, then tests to see if log file can be opened and
-    written. If it can't, logging will be defaulted to the console. Since this
-    config is written to the root logger, and since this config is run before
-    any external functions are used, all new logger objects will pull this
-    config unless explicitly overwritten in that module.
+    Configures the root logger, based on configuration choices in parameter. If
+    logging fails for whatever reason, a fallback handler is used, writing all
+    further logs to the console.
+    
+    :param cfg: Plogger configs
+    :type cfg: dict
+
+    :return logging.Logger: Configured root logger. DO NOT USE. Always create
+                            module-level logger using logging.getLogger(__name__).
     '''
+
+    # Validate config parms.
+    if (not "output" in cfg):
+        print("No log output found in config. Defaulting to console.")
+        cfg["output"] = "console"
+    if (not "level" in cfg):
+        print(f"No log level found in config. Defaulting to {logging.getLevelName(LOG_LEVEL)}.")
+        cfg["level"] = logging.getLevelName(LOG_LEVEL)
+
+    match cfg["level"].upper:
+        case "CRITICAL": logLevel = logging.CRITICAL
+        case "ERROR": logLevel = logging.ERROR
+        case "WARNING": logLevel = logging.WARNING
+        case "INFO": logLevel = logging.INFO
+        case "DEBUG": logLevel = logging.DEBUG
+        case _:
+            print(f"Invalid log level specified in config: {cfg['level']}. "
+                  f"Defaulting to {logging.getLevelName(LOG_LEVEL)}.")
+            logLevel = LOG_LEVEL
 
     # Create the logging formatter.
     formatter = logging.Formatter(
@@ -83,32 +107,37 @@ def configRootLogger():
         datefmt="%Y-%m-%dT%H:%M:%S"
     )
 
+    # Get the root logger and apply handlers
+    root_logger = logging.getLogger()
+    root_logger.setLevel(logLevel)
+
     # Create the fallback (console) handler.
     # This handler will receive log messages if writing to the log file fails.
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setFormatter(formatter)
 
-    # Create the primary file handler with fallback.
-    file_handler = LoggingFileHandler(
-        filename=LOG_FILE, fallback_handler=console_handler
-    )
-    file_handler.setFormatter(formatter)
+    if (cfg["output"].lower == "file"):
+        # Create the primary file handler with fallback.
+        f = LOG_FILE
+        if ("filePath" in cfg): f = cfg["filePath"]
+        file_handler = LoggingFileHandler(
+            filename=f, fallback_handler=console_handler
+        )
+        file_handler.setFormatter(formatter)
 
-    # Get the root logger and apply handlers
-    root_logger = logging.getLogger()
-    root_logger.setLevel(LOG_LEVEL)
+        # NOTE: DO NOT add console handler! LoggingFileHandler takes care of this.
+        root_logger.addHandler(file_handler)
 
-    # Add the fallback file handler.
-    # NOTE: DO NOT add console handler! LoggingFileHandler takes care of this.
-    root_logger.addHandler(file_handler)
-
-    # Test that the log file can be written.
-    try:
-        with open(LOG_FILE, 'w') as f:
-            f.write("")
-        root_logger.debug("Attempting to write to log file '%s'...", LOG_FILE)
-    except OSError as e:
-        root_logger.warning("Log file write failed! Subsequent log messages "
-                            "will be printed to the console.")
+        # Test that the log file can be written.
+        try:
+            with open(f, 'w') as fi:
+                fi.write("")
+                fi.close()
+            root_logger.debug("Attempting to write to log file '%s'...", f)
+        except OSError as e:
+            root_logger.warning("Log file write failed! Subsequent log messages "
+                                "will be printed to the console.")
+    elif (cfg["output"].lower == "console"):
+        root_logger.addHandler(console_handler)
 
     return root_logger
