@@ -37,7 +37,7 @@ def main():
     cfg = loadConfig()  # Get config from file.
 
     # Configure the logger.
-    plogger.configRootLogger(cfg["plogger"])
+    plogger.config_root_logger(cfg["plogger"])
     logger = logging.getLogger(__name__)
     logger.info("Application started.")
 

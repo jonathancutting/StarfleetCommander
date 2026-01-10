@@ -69,7 +69,7 @@ class LoggingFileHandler(logging.FileHandler):
                 # Now, emit the original message using the fallback handler.
                 self.fallback_handler.emit(record)
 
-def configRootLogger(cfg:dict[str, str]) -> logging.Logger:
+def config_root_logger(cfg:dict[str, str]) -> logging.Logger:
     '''
     Configures the root logger, based on configuration choices in parameter. If
     logging fails for whatever reason, a fallback handler is used, writing all
@@ -93,15 +93,15 @@ def configRootLogger(cfg:dict[str, str]) -> logging.Logger:
         cfg["level"] = logging.getLevelName(LOG_LEVEL)
 
     match cfg["level"].upper():
-        case "CRITICAL": logLevel = logging.CRITICAL
-        case "ERROR": logLevel = logging.ERROR
-        case "WARNING": logLevel = logging.WARNING
-        case "INFO": logLevel = logging.INFO
-        case "DEBUG": logLevel = logging.DEBUG
+        case "CRITICAL": log_level = logging.CRITICAL
+        case "ERROR": log_level = logging.ERROR
+        case "WARNING": log_level = logging.WARNING
+        case "INFO": log_level = logging.INFO
+        case "DEBUG": log_level = logging.DEBUG
         case _:
             print(f"Invalid log level specified in config: {cfg['level']}. "
                   f"Defaulting to {logging.getLevelName(LOG_LEVEL)}.")
-            logLevel = LOG_LEVEL
+            log_level = LOG_LEVEL
 
     # Create the logging formatter.
     formatter = logging.Formatter(
@@ -111,7 +111,7 @@ def configRootLogger(cfg:dict[str, str]) -> logging.Logger:
 
     # Get the root logger and apply handlers
     root_logger = logging.getLogger()
-    root_logger.setLevel(logLevel)
+    root_logger.setLevel(log_level)
 
     # Create the fallback (console) handler.
     # This handler will receive log messages if writing to the log file fails.
@@ -135,7 +135,7 @@ def configRootLogger(cfg:dict[str, str]) -> logging.Logger:
             with open(f, 'w') as fi:
                 fi.write("")
                 fi.close()
-            root_logger.debug("Attempting to write to log file '%s'...", f)
+            root_logger.debug("Testing write to log file '%s'...", f)
         except OSError as e:
             root_logger.warning("Log file write failed! Subsequent log messages "
                                 "will be printed to the console.")
