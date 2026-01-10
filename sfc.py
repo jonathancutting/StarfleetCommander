@@ -45,7 +45,7 @@ def main():
     s = requests.Session()
     url = "https://playstarfleet.com/login"
     try:
-        logger.debug("Trying to connect to SFC...")
+        logger.info("Trying to connect to SFC...")
         r = sendRequest({"url": url, "sess":s})
     except requests.exceptions.HTTPError:
         logger.exception("HTTP error encountered while trying to connect to SFC login page.")
@@ -59,7 +59,8 @@ def main():
         logger.exception("ValueError experienced while trying to connect to SFC loging page.")
         print("An error occurred while trying to connect to SFC. The application will now exit.")
         exit()
-    
+    logger.info("Successfully connected to SFC server.")
+
     # Start terminal interface.
     print(getWelcomeMessage(r.content.decode()))
     print()

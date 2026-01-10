@@ -27,7 +27,7 @@ def login(cmd:dict[str, list[str]], s:requests.Session) -> str:
     :rtype:     str
     '''
 
-    logger.debug("Entered function %(funcName)s.")
+    logger.debug("Entered function login().")
     opts = parseArgs(cmd["args"])
     uname = ""
     pw = ""
@@ -92,7 +92,7 @@ def parseArgs(pOpts:list[str]) -> list:
                 with the form {"opt": str, "args": list[str]}.
     '''
 
-    logger.debug("Entered function %(funcName)s.")
+    logger.debug("Entered function parseArgs().")
     opts = []
 
     if len(pOpts) == 0: return opts
@@ -218,7 +218,7 @@ def logout(sess:requests.Session) -> None:
         None:   Function does not return an object.
     '''
 
-    logger.debug("Entered function %(funcName)s.")
+    logger.debug("Entered function logout().")
     logger.info("Logging out...")
     url = "https://playstarfleet.com/login/logout"
     hdr = buildRequestHeaders()

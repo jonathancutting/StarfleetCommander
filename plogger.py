@@ -142,4 +142,5 @@ def config_root_logger(cfg:dict[str, str]) -> logging.Logger:
     elif (cfg["output"].lower() == "console"):
         root_logger.addHandler(console_handler)
 
+    root_logger.info("Logging level set to %s.", logging.getLevelName(root_logger.getEffectiveLevel()))
     return root_logger
