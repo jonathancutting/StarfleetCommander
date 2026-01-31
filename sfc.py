@@ -13,6 +13,8 @@ import plogger                          # for logging with fallback config
 from restRequests import sendRequest    # for standardized REST functionality
 from cmdLogin import login, logout      # for login and logout commands
 
+logger = logging.getLogger(__name__)
+
 class FCOLOR:
     # https://gist.github.com/fnky/458719343aabd01cfb17a3a4f7296797
     BLACK = "\033[30m"
@@ -38,7 +40,6 @@ def main():
 
     # Configure the logger.
     plogger.config_root_logger(cfg["plogger"])
-    logger = logging.getLogger(__name__)
     logger.info("Application started.")
 
     # Start session and get login page.
@@ -82,7 +83,7 @@ def main():
                 rtnStr = login(cmdDict, s)
                 if len(rtnStr) > 0:
                     username = getUsername(rtnStr)
-                    path = "~/getbent"
+                    path = getPath(rtnStr)
             case "exit" | "quit" | "logout":
                 logout(s)
                 go = False
@@ -261,11 +262,34 @@ def getPath(htm:str) -> str:
     if titleElem:       # Check that the title element exists.
         titleStr = titleElem.string
         if titleStr:    # Check that the title actually contains text.
-            titles = titleStr.split(" - ")
+            logger.debug("Title received from server: \"%s\"", titleStr.replace("\n", "\\n"))
+            titles = titleStr.strip().split(" - ")
+            match titles[0]:
+                case ("Home" | "Fleets" | "Missions" | "Leaderboards"
+                      | "Tech Tree" | "Messages" | "Buildings" | "Shipyard"
+                      | "Defense" | "Research Lab" | "Factory" | "Workers"):
+                    if len(titles) > 1:
+                        path = f"{titles[1]}/{titles[0]}"
+                    else:
+                        logger.warning("Received good area \"%s,\" but no planet string! "
+                                       "Something is wrong with the server response.", titles[0])
+                case s if "Solar System" in s:
+                    _, sep, system = titles[0].rpartition(" ")
+                    if sep and len(titles) > 1: # Check that the separating space was found.
+                        path = f"{titles[1]}/Galaxy/[{system}]"
+                    else:
+                        logger.warning("Received Galaxy screen title, but no system "
+                                       "locator or planet name! Something is wrong "
+                                       "with the server response.")
+                case "Starfleet Commander":
+                    pass
+                case _:
+                    pass
+            logger.debug("Path constructed from HTML title: \"%s\"", path)
         else:
-            return ""
+            logger.warning("Title received from server contains no text.")
     else:
-        return ""
+        logger.warning("No title in the HTML receeived from server.")
 
     return path
 
@@ -285,7 +309,6 @@ def loadConfig() -> dict:
     try:
         with open("sfc.cfg", 'r') as f:
             config = json.load(f)
-            f.close()
     except OSError as e:
         print(f"Error while reading config file: {e}. Using defaults.")
 

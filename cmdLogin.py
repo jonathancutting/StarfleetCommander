@@ -123,13 +123,11 @@ def getUsername() -> str:
     '''
     Prompts the user for a username.
 
-    Args:
-        None:   No arguments.
-
-    Returns:
-        str:    String containing username as entered by user, including spaces.
+    :return:    String containing username as entered by user, including spaces.
+    :rtype:     str
     '''
 
+    logger.debug("No username supplied in login command. Prompting user.")
     uname = input("Username: ")
     return uname
 
@@ -138,13 +136,11 @@ def getPassword() -> str:
     Uses the getpass module to prompt the user for a password while not printing
     the input to the terminal.
 
-    Args:
-        None:   No arguments.
-
-    Returns:
-        str:    String containing password as entered by user, including spaces.
+    :return:    String containing password as entered by user, including spaces.
+    :rtype:     str
     '''
 
+    logger.debug("Asking the user for a password.")
     pw = getpass.getpass("Password: ")
     return pw
 
@@ -184,15 +180,10 @@ def buildRequestHeaders() -> dict[str, str]:
 def optHelp():
     '''
     Prints help text for login command to the terminal.
-
-    Args:
-        None:   No arguments.
-
-    Returns:
-        None:   No returned objects.
     '''
+    logger.debug("User requested help for command \"login.\"")
     w = shutil.get_terminal_size().columns
-    print("Usage: login [OPTION]...")
+    print("Usage: login [OPTION] [args]")
     t = "Log into the SFC server using provided username (username will be " \
         "requested by default)."
     s = textwrap.wrap(t,w)
