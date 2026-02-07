@@ -1,6 +1,7 @@
 import unittest
 from sfc import buildCommandDict
 from sfc import loadConfig
+from planet import parseLocation
 
 class Tests(unittest.TestCase):
     def test_buildCommandDict_blank(self):
@@ -26,6 +27,11 @@ class Tests(unittest.TestCase):
     def test_loadConfig(self):
         expected = {"plogger": {"output": "file", "filePath": "sfc.log", "level": "DEBUG"}}
         self.assertEqual(loadConfig(), expected)
+    
+    def test_parseLocation(self):
+        passed = "8:41:3m"
+        expected = {"galaxy": 8, "system": 41, "slot": 3, "moon": True}
+        self.assertEqual(parseLocation(passed), expected)
 
 if __name__ == "__main__":
     unittest.main()

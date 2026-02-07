@@ -17,28 +17,40 @@ class Planet:
 
 def parseLocation(loc:str) -> dict:
     '''
-    Parses the combined location string into a dictionary containing the parts.
+    Parses a location string like "15:450:5m" into a dict with galaxy, system,
+    slot, and moon.
 
-    Args:
-        loc (str):  combined location string containing the full location. For
-                    example, "15:450:5m".
-    
-    Returns:
-        dict (str, str):    dictionary containing separated galaxy, system, and
-                            planet slot locations.
+    :param loc: Location string in format "G:S:P" or "G:S:Pm" (m = moon)
+    :type loc:  str
+    :return:    dict with keys "galaxy", "system", "slot", and "moon"
+    :rtype:     dict (str, int|bool)
     '''
+
+    logger.debug("Planet location passed: %s", loc)
     location = {"galaxy":0, "system":0, "slot":0, "moon":False}
+
     try:
-        elems = loc.split(":")
+        elems = loc.strip().split(":")  # This will return a list of strings.
+        if len(elems) != 3:             # Check that the list has exectly 3 elements.
+            raise ValueError(f"Invalid location format \"{loc}\". Expected \"G:S:P\" or \"G:S:Pm\"")
+
         location["galaxy"] = int(elems[0])
         location["system"] = int(elems[1])
-        if str(elems[2])[-1] == "m":
+
+        if elems[2].endswith("m"):      # Detect if the location designates a moon.
             location["slot"] = int(elems[2][:-1])
             location["moon"] = True
         else:
             location["slot"] = int(elems[2])
             location["moon"] = False
-    except (ValueError, TypeError) as e:
-        print(f"Problem loading planet location.")
+        
+        # Log successful parse.
+        locStr = f"{location['galaxy']}:{location['system']}:{location['slot']}"
+        if location["moon"]: locStr += "m"
+        logger.debug("Parsed planet location: %s", locStr)
 
-    return location
+        return location
+
+    except (ValueError, TypeError) as e:
+        logger.exception("Could not parse planet location %s", loc)
+        raise
