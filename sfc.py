@@ -12,6 +12,7 @@ import json                         # for config file parsing
 import plogger                          # for logging with fallback config
 from restRequests import sendRequest    # for standardized REST functionality
 from cmdLogin import login, logout      # for login and logout commands
+from cmdPlanet import planet            # for accessing planet functions
 
 logger = logging.getLogger(__name__)
 
@@ -88,9 +89,9 @@ def main():
                 logout(s)
                 go = False
             case "help":
-                r = cmdHelp()
-            case "":
-                pass
+                cmdHelp()
+            case "planet" | "planets":
+                planet(cmdDict["cmd"], s)
             case _:
                 print(f"Command '{cmdDict['cmd']}' not found. See 'help' for a list of available commands.")
 
@@ -157,7 +158,7 @@ def cmdHelp():
      "the command followed by \"--help\" or \"-h\"."
     s.append(textwrap.fill(t, w))
 
-    t = "Currently supported commands are: login, help, exit, quit"
+    t = "Currently supported commands are: login, planet, help, quit"
     s.append(textwrap.fill(t, w))
     
     for l in s:
