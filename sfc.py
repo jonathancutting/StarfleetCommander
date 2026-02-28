@@ -270,7 +270,7 @@ def getPath(htm:str) -> str:
                       | "Tech Tree" | "Messages" | "Buildings" | "Shipyard"
                       | "Defense" | "Research Lab" | "Factory" | "Workers"):
                     if len(titles) > 1:
-                        path = f"{titles[1]}/{titles[0]}"
+                        path = f"[{titles[1]}]/{titles[0]}"
                     else:
                         logger.warning("Received good area \"%s,\" but no planet string! "
                                        "Something is wrong with the server response.", titles[0])
