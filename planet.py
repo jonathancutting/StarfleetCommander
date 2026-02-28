@@ -5,22 +5,22 @@ logger = logging.getLogger(__name__)    # set module-level logger object
 
 @dataclass
 class Location:
-    galaxy: int
-    system: int
-    slot: int
-    moon: bool
+    galaxy: int = 0
+    system: int = 0
+    slot: int = 0
+    moon: bool = False
 
 @dataclass
 class Resources:
-    ore: int
-    crystal: int
-    hydrogen: int
+    ore: int = 0
+    crystal: int = 0
+    hydrogen: int = 0
 
 @dataclass
 class Mines:
-    ore: int
-    crystal: int
-    hydrogen: int
+    ore: int = 0
+    crystal: int = 0
+    hydrogen: int = 0
 
 @dataclass
 class Fleet:
@@ -63,9 +63,9 @@ class Planet:
         # data members (instance variables)
         self.id = ""
         self.name = ""
-        self.location = Location(0, 0, 0, False)
-        self.resources = Resources(0, 0, 0)
-        self.mines = Mines(0, 0, 0)
+        self.location = Location()
+        self.resources = Resources()
+        self.mines = Mines()
         self.ships = Fleet()
         self.defences = Defences()
         self.tasks = {}
